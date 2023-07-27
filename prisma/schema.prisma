@@ -1,27 +1,59 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgres"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id    Int     @default(autoincrement()) @id
-  email String  @unique
-  name  String?
-  posts Post[]
+model Account {
+  idAccount     Int            @id @default(autoincrement()) @map("id_account")
+  id            String         @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt     DateTime       @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamp(6)
+  name          String         @db.VarChar(50)
+  conversations Conversation[]
+  messages      Message[]
+  visitors      Visitor[]
+
+  @@map("accounts")
 }
 
-model Post {
-  id        Int      @default(autoincrement()) @id
-  title     String
-  content   String?
-  published Boolean? @default(false)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+model Conversation {
+  id        String    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamp(6)
+  idAccount Int       @map("id_account")
+  visitorId String    @map("visitor_id") @db.Uuid
+  account   Account   @relation(fields: [idAccount], references: [idAccount], onDelete: NoAction, onUpdate: NoAction)
+  visitor   Visitor   @relation(fields: [visitorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  messages  Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt      DateTime     @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamp(6)
+  idAccount      Int          @map("id_account")
+  conversationId String       @map("conversation_id") @db.Uuid
+  content        String?
+  visitorId      String?      @map("visitor_id") @db.Uuid
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  account        Account      @relation(fields: [idAccount], references: [idAccount], onDelete: NoAction, onUpdate: NoAction)
+  visitor        Visitor?     @relation(fields: [visitorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("messages")
+}
+
+model Visitor {
+  id            String         @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt     DateTime       @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamp(6)
+  idAccount     Int            @map("id_account")
+  connectionId  String?        @map("connection_id") @db.VarChar
+  ip            String         @db.Inet
+  conversations Conversation[]
+  messages      Message[]
+  account       Account        @relation(fields: [idAccount], references: [idAccount], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("visitors")
 }
