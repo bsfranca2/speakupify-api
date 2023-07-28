@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { PrismaService } from './modules/prisma';
 import { VisitorsModule } from './modules/visitors';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configuration } from './modules/config';
 import { HealthModule } from './modules/health';
+import { AppLoggerMiddleware } from './app-logger.middleware';
 
 @Module({
   imports: [
@@ -25,5 +26,9 @@ export class AppModule {
     AppModule.hostname = config.get('HOST') || '127.0.0.1';
     AppModule.port = config.get('PORT') || 3000;
     AppModule.isDev = config.get('NODE_ENV') !== 'production';
+  }
+
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AppLoggerMiddleware).forRoutes('*');
   }
 }
