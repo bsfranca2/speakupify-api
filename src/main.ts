@@ -8,7 +8,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
 
-  await app.listen(AppModule.port);
-  logger.log('Listening at http://localhost:' + AppModule.port + '/');
+  await app.listen(AppModule.port, AppModule.hostname);
+  logger.log(`Listening at http://${AppModule.hostname}:${AppModule.port}/`);
 }
 bootstrap();

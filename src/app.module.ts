@@ -17,10 +17,12 @@ import { HealthModule } from './modules/health';
   providers: [PrismaService],
 })
 export class AppModule {
+  static hostname: string;
   static port: string | number;
   static isDev: boolean;
 
   constructor(private readonly config: ConfigService) {
+    AppModule.hostname = config.get('HOST') || '127.0.0.1';
     AppModule.port = config.get('PORT') || 3000;
     AppModule.isDev = config.get('NODE_ENV') !== 'production';
   }
