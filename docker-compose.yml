@@ -12,6 +12,17 @@ services:
       - 5432:5432
     networks:
       - main
+      
+  api:
+    image: bsfranca2/spk-api
+    environment:
+      DATABASE_URL: postgresql://postgres:strongpassword@postgres:5432/speakupify?schema=public
+      HOST: 0.0.0.0
+      PORT: 3000
+    ports:
+      - 3000:3000
+    networks:
+      - main
 
 volumes:
   postgres-data:
