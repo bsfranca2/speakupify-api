@@ -35,6 +35,19 @@ export class VisitorsService {
       },
       select: null,
     });
+    // TODO: Move this temp create conversation here
+    const conversation = await this.prismaService.conversation.findFirst({
+      where: { id: visitorId },
+    });
+    if (!conversation) {
+      await this.prismaService.conversation.create({
+        data: {
+          id: visitorId,
+          idAccount: account.idAccount,
+          visitorId,
+        },
+      });
+    }
   }
 
   async disconnectVisitor(disconnectVisitorDto: DisconnectVisitorDto) {
